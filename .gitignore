@@ -1,0 +1,25 @@
+# Python environment
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# API keys and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Datasets, embeddings and generated results
+data/raw/
+data/processed/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
