@@ -10,8 +10,12 @@ from dotenv import load_dotenv
 from huggingface_hub import hf_hub_download
 from openai import OpenAI
 
-
 ROOT = Path(__file__).resolve().parents[2]
+import sys
+sys.path.insert(0, str(ROOT / "src"))
+
+from retrieval.common import load_questions
+
 CACHE_DIR = ROOT / "data" / "processed" / "full_dense_test"
 MODEL = "text-embedding-3-small"
 BATCH_SIZE = 32
@@ -161,6 +165,7 @@ def evaluate(docs, questions, doc_vectors, question_vectors):
         n_gold = len(gold)
 
         record = {
+            "qid": question.get("qid", str(qi)),
             "question_index": qi,
             "question": question["question"],
             "gold": sorted(gold),
@@ -249,8 +254,8 @@ def evaluate(docs, questions, doc_vectors, question_vectors):
                 f"= {successes / len(rows):.4f}"
             )
 
-    results_path = CACHE_DIR / "dense_full_results.json"
-    summary_path = CACHE_DIR / "dense_full_summary.json"
+    results_path = CACHE_DIR / "dense_full_dev_results.json"
+    summary_path = CACHE_DIR / "dense_full_dev_summary.json"
 
     summary = {
         "model": MODEL,
@@ -290,22 +295,34 @@ def main():
         raise RuntimeError("OPENAI_API_KEY not found in .env")
 
     if args.skip_download:
-        if not args.corpus or not args.questions:
-            parser.error(
-                "--skip-download requires --corpus and --questions"
-            )
+        if not args.corpus:
+            parser.error("--corpus is required")
+
         docs = list(read_jsonl(args.corpus))
-        questions = list(read_jsonl(args.questions))
+
+        # EXACT same dev questions as the original baseline.
+        dev_questions = load_questions("dev")
+
+        questions = [
+            {
+                "question": q["question"],
+                "article_ids": q["gold"],
+                "qid": q["qid"],
+            }
+            for q in dev_questions
+        ]
     else:
         docs, questions = download_wixqa()
 
     assert len(docs) > 6000, (
         f"Expected full WixQA corpus, got {len(docs)} docs."
     )
-    assert len(questions) == 200, (
-        f"Expected 200 expert-written questions, "
-        f"got {len(questions)}."
-    )
+    if args.skip_download:
+        assert len(questions) == 89, (
+            f"Expected 89 dev questions, got {len(questions)}."
+        )
+    else:
+        assert len(questions) == 200
 
     doc_ids = {str(d["id"]) for d in docs}
     assert len(doc_ids) == len(docs), "Duplicate article IDs."
