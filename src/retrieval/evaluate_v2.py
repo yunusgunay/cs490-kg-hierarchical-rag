@@ -57,7 +57,7 @@ BEAM_RE = re.compile(r"^(.+?)_W(\d+)_([a-z_]+)_B(\d+)$")     # beam_W2_typed_B5,
 
 
 def is_nav(name):
-    return name.startswith(("nav_", "beam"))
+    return name.startswith(("nav_", "beam", "simplebeam"))
 
 
 def beam_parts(name):

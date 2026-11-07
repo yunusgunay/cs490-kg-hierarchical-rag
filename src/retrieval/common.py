@@ -48,7 +48,7 @@ EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
 MAX_EMBED_CHARS = 20000          # ~5k tokens; text-embedding-3-small limit is 8191 tokens
 EMBED_BATCH = 64
 
-TREES = ("leiden", "tfidf-kmeans")
+TREES = ("leiden", "tfidf-kmeans", "leiden-rich")
 SHORTCUT_POLICIES = ("typed", "random_typed", "strongest", "random")
 
 _LOCK = threading.Lock()
